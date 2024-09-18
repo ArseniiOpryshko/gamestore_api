@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using GameStore.Common;
 using GameStore.Data;
 using GameStore.Dtos;
 using GameStore.Models.Games;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Repositories.Store
 {
@@ -31,18 +33,27 @@ namespace GameStore.Repositories.Store
             throw new NotImplementedException();
         }
 
-        public async Task<Game> CreateGame(GameCreateDto gameDto) //, byte[] mainImage, List<byte[]> images
+        public async Task<OperationResult<int>> CreateGame(GameCreateDto gameDto) //, byte[] mainImage, List<byte[]> images
         {
             Game game = mapper.Map<Game>(gameDto);
+            Company company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
+            if(company == null)
+            {
+                return OperationResult<int>.FailureResult("Company with such id doesn't exist");
+            }
+            game.ReleaseDate = DateTime.Now; 
 
-            return game;
+            await context.Games.AddAsync(game);
+            await context.SaveChangesAsync();
+
+            return OperationResult<int>.SuccessResult(game.Id);    
         }
 
     }
     public interface IStoreRepository
     {
         Task<IEnumerable<Game>> GetGames();
-        Task<Game> CreateGame(GameCreateDto gameDto); //, byte[] mainImage, List<byte[]> images
+        Task<OperationResult<int>> CreateGame(GameCreateDto gameDto); //, byte[] mainImage, List<byte[]> images
         Task<Game> UpdateGame();
         Task<int> DeleteGame(string name);
     }

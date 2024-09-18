@@ -1,3 +1,4 @@
+using GameStore.Common;
 using GameStore.Data;
 using GameStore.Repositories.Store;
 using Microsoft.AspNetCore.Hosting;

@@ -17,9 +17,14 @@ namespace GameStore.Controllers
         }
 
         [HttpPost("CreateGame")]
-        public async Task<ActionResult<Game>> AddToCart(GameCreateDto gameDto)//, [FromForm] IFormFile mainImage, [FromForm] List<IFormFile> images
+        public async Task<ActionResult<int>> AddToCart(GameCreateDto gameDto)//, [FromForm] IFormFile mainImage, [FromForm] List<IFormFile> images
         {
-            return await repository.CreateGame(gameDto);
+            var result = await repository.CreateGame(gameDto);
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.ErrorMessage);
         }   
     }
 }
