@@ -19,14 +19,48 @@ namespace GameStore.Repositories.Store
             this.mapper = mapper;
         }
 
-        public async Task<int> DeleteGame(string name)
+        public async Task<OperationResult<int>> DeleteGameByName(string name)
         {
-            throw new NotImplementedException();
+            Game game = await context.Games.FirstOrDefaultAsync(x=>x.Name == name);
+            if (game == null)
+            {
+                return OperationResult<int>.FailureResult("Game with such name doesn't exist");
+            }
+
+            context.Games.Remove(game);
+            await context.SaveChangesAsync();
+
+            return OperationResult<int>.SuccessResult(game.Id);
         }
 
-        public async Task<IEnumerable<Game>> GetGames()
+        public async Task<OperationResult<int>> DeleteGameById(int id)
         {
-            throw new NotImplementedException();
+            Game game = await context.Games.FindAsync(id);
+            if (game == null)
+            {
+                return OperationResult<int>.FailureResult("Game with such id doesn't exist");
+            }
+
+            context.Games.Remove(game);
+            await context.SaveChangesAsync();
+
+            return OperationResult<int>.SuccessResult(id);
+        }
+
+        public async Task<OperationResult<IEnumerable<Game>>> GetGames()
+        {
+            var games = await context.Games
+                .Include(x => x.Tags)
+                .Include(x => x.Photos)
+                .Include(x => x.Reviews)
+                .ToListAsync();
+
+            if (!games.Any())
+            {
+                return OperationResult<IEnumerable<Game>>.FailureResult("There are no games in the store");
+            }
+
+            return OperationResult<IEnumerable<Game>>.SuccessResult(games);
         }
 
         public async Task<OperationResult<Game>> UpdateGame(GameUpdateDto gameDto)
@@ -97,9 +131,10 @@ namespace GameStore.Repositories.Store
     }
     public interface IStoreRepository
     {
-        Task<IEnumerable<Game>> GetGames();
+        Task<OperationResult<IEnumerable<Game>>> GetGames();
         Task<OperationResult<int>> CreateGame(GameCreateDto gameDto); //, byte[] mainImage, List<byte[]> images
         Task<OperationResult<Game>> UpdateGame(GameUpdateDto gameDto);
-        Task<int> DeleteGame(string name);
+        Task<OperationResult<int>> DeleteGameByName(string name);
+        Task<OperationResult<int>> DeleteGameById(int id);
     }
 }
