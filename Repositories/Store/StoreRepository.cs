@@ -5,6 +5,7 @@ using GameStore.Dtos;
 using GameStore.Models.Games;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace GameStore.Repositories.Store
 {
@@ -28,9 +29,42 @@ namespace GameStore.Repositories.Store
             throw new NotImplementedException();
         }
 
-        public async Task<Game> UpdateGame()
+        public async Task<OperationResult<Game>> UpdateGame(GameUpdateDto gameDto)
         {
-            throw new NotImplementedException();
+            Game game = await context.Games
+                .Include(g => g.Tags)
+                .FirstOrDefaultAsync(x=>x.Id == gameDto.Id);
+
+            if (game == null)
+            {
+                return OperationResult<Game>.FailureResult("Game with such id doesn't exist");
+            }
+
+            if (gameDto.CompanyId != 0)
+            {
+                Company company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
+                if (company == null)
+                {
+                    return OperationResult<Game>.FailureResult("Company with such id doesn't exist");
+                }
+            }
+
+            game = mapper.Map(gameDto, game);
+
+            var tagsFromDb = await context.Tags
+                .Where(x => gameDto.Tags.Contains(x.Name))
+                .ToListAsync();
+
+            var newTags = gameDto.Tags
+                .Where(tagName => !tagsFromDb.Any(t => t.Name == tagName))
+                .Select(tagName => new Tag { Name = tagName })
+                .ToList();
+
+            game.Tags = tagsFromDb.Concat(newTags).ToList();
+
+            await context.SaveChangesAsync();
+
+            return OperationResult<Game>.SuccessResult(game);
         }
 
         public async Task<OperationResult<int>> CreateGame(GameCreateDto gameDto) //, byte[] mainImage, List<byte[]> images
@@ -41,7 +75,18 @@ namespace GameStore.Repositories.Store
             {
                 return OperationResult<int>.FailureResult("Company with such id doesn't exist");
             }
-            game.ReleaseDate = DateTime.Now; 
+            game.ReleaseDate = DateTime.Now;
+
+            var tagsFromDb = await context.Tags
+                .Where(x => gameDto.Tags.Contains(x.Name))
+                .ToListAsync();
+
+            var newTags = gameDto.Tags
+                .Where(tagName => !tagsFromDb.Any(t => t.Name == tagName))
+                .Select(tagName => new Tag { Name = tagName })
+                .ToList();
+
+            game.Tags = tagsFromDb.Concat(newTags).ToList();
 
             await context.Games.AddAsync(game);
             await context.SaveChangesAsync();
@@ -54,7 +99,7 @@ namespace GameStore.Repositories.Store
     {
         Task<IEnumerable<Game>> GetGames();
         Task<OperationResult<int>> CreateGame(GameCreateDto gameDto); //, byte[] mainImage, List<byte[]> images
-        Task<Game> UpdateGame();
+        Task<OperationResult<Game>> UpdateGame(GameUpdateDto gameDto);
         Task<int> DeleteGame(string name);
     }
 }
