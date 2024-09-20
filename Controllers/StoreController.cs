@@ -1,6 +1,6 @@
-﻿using GameStore.Dtos;
+﻿using GameStore.Dtos.GameDtos;
 using GameStore.Models.Games;
-using GameStore.Repositories.Store;
+using GameStore.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Migrations;
 

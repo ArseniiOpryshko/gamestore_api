@@ -1,4 +1,4 @@
-﻿namespace GameStore.Dtos
+﻿namespace GameStore.Dtos.GameDtos
 {
     public class GameUpdateDto
     {

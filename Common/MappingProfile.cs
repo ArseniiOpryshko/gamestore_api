@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GameStore.Dtos;
+using GameStore.Dtos.GameDtos;
 using GameStore.Models.Games;
 
 namespace GameStore.Common

@@ -1,27 +1,28 @@
 ﻿using AutoMapper;
 using GameStore.Common;
 using GameStore.Data;
-using GameStore.Dtos;
+using GameStore.Dtos.GameDtos;
 using GameStore.Models.Games;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace GameStore.Repositories.Store
+namespace GameStore.Repositories
 {
     public class StoreRepository : IStoreRepository
     {
         private readonly IMapper mapper;
         private readonly GameStoreContext context;
 
-        public StoreRepository(GameStoreContext context, IMapper mapper) {
+        public StoreRepository(GameStoreContext context, IMapper mapper)
+        {
             this.context = context;
             this.mapper = mapper;
         }
 
         public async Task<OperationResult<int>> DeleteGameByName(string name)
         {
-            Game game = await context.Games.FirstOrDefaultAsync(x=>x.Name == name);
+            Game game = await context.Games.FirstOrDefaultAsync(x => x.Name == name);
             if (game == null)
             {
                 return OperationResult<int>.FailureResult("Game with such name doesn't exist");
@@ -67,7 +68,7 @@ namespace GameStore.Repositories.Store
         {
             Game game = await context.Games
                 .Include(g => g.Tags)
-                .FirstOrDefaultAsync(x=>x.Id == gameDto.Id);
+                .FirstOrDefaultAsync(x => x.Id == gameDto.Id);
 
             if (game == null)
             {
@@ -105,7 +106,7 @@ namespace GameStore.Repositories.Store
         {
             Game game = mapper.Map<Game>(gameDto);
             Company company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
-            if(company == null)
+            if (company == null)
             {
                 return OperationResult<int>.FailureResult("Company with such id doesn't exist");
             }
@@ -125,7 +126,7 @@ namespace GameStore.Repositories.Store
             await context.Games.AddAsync(game);
             await context.SaveChangesAsync();
 
-            return OperationResult<int>.SuccessResult(game.Id);    
+            return OperationResult<int>.SuccessResult(game.Id);
         }
 
     }

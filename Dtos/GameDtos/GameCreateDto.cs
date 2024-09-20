@@ -1,6 +1,6 @@
 ﻿using GameStore.Models.Games;
 
-namespace GameStore.Dtos
+namespace GameStore.Dtos.GameDtos
 {
     public class GameCreateDto
     {
