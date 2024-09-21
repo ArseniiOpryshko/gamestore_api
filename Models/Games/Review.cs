@@ -7,8 +7,8 @@ namespace GameStore.Models.Games
     {
         [Key]
         public int Id { get; set; }
-        public int? GameId { get; set; }
-        public int? UserId { get; set; }
+        public int GameId { get; set; }
+        public int UserId { get; set; }
         public string Content { get; set; }
         public bool IsRecommended { get; set; }
         public Game Game { get; set; }

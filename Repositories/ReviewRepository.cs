@@ -49,6 +49,8 @@ namespace GameStore.Repositories
             game.Reviews.Add(review);
             await context.SaveChangesAsync();
 
+            await CalculateReviewStatusForGame(review.GameId);
+
             return OperationResult<int>.SuccessResult(review.Id);
         }
 
@@ -56,13 +58,15 @@ namespace GameStore.Repositories
         {
             Review? review = await context.Reviews.FindAsync(id);
 
-            if(review == null)
+            if (review == null)
             {
-                return OperationResult<int>.FailureResult("Review with such id doesn't exist"); 
+                return OperationResult<int>.FailureResult("Review with such id doesn't exist");
             }
 
             context.Reviews.Remove(review);
             await context.SaveChangesAsync();
+
+            await CalculateReviewStatusForGame(review.GameId);
 
             return OperationResult<int>.SuccessResult(id);
         }
@@ -71,7 +75,7 @@ namespace GameStore.Repositories
         {
             List<Review> reviews = await context.Reviews
                 .AsNoTracking()
-                .Where(x=>x.GameId == gameId)
+                .Where(x => x.GameId == gameId)
                 .ToListAsync();
 
             if (reviews == null || !reviews.Any())
@@ -85,7 +89,7 @@ namespace GameStore.Repositories
         public async Task<OperationResult<int>> UpdateReview(UpdateReviewDto reviewDto)
         {
             Review? review = await context.Reviews.FindAsync(reviewDto.ReviewId);
-            
+
             if (review == null)
             {
                 return OperationResult<int>.FailureResult("Review with such id doesn't exist");
@@ -96,7 +100,34 @@ namespace GameStore.Repositories
 
             await context.SaveChangesAsync();
 
+            await CalculateReviewStatusForGame(review.GameId);
+
             return OperationResult<int>.SuccessResult(review.Id);
+        }
+
+        public async Task CalculateReviewStatusForGame(int gameId)
+        {
+            Game? game = await context.Games
+                .Include(x => x.Reviews)
+                .FirstOrDefaultAsync(x => x.Id == gameId);
+
+            int totalReviews = game!.Reviews.Count();
+            int positiveReviews = game!.Reviews.Where(x => x.IsRecommended).Count();
+
+            double positivePercentage = (double)positiveReviews / totalReviews * 100;
+
+            if (positivePercentage >= 85)
+                game.ReviewStatus = ReviewStatus.VeryPositive;
+            else if (positivePercentage >= 65)
+                game.ReviewStatus = ReviewStatus.Positive;
+            else if (positivePercentage >= 45)
+                game.ReviewStatus = ReviewStatus.Neutral;
+            else if (positivePercentage >= 20)
+                game.ReviewStatus = ReviewStatus.Negative;
+            else
+                game.ReviewStatus = ReviewStatus.VeryNegative;
+
+            await context.SaveChangesAsync();
         }
     }
     public interface IReviewRepository
