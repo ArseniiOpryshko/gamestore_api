@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using GameStore.Common;
 using GameStore.Data;
+using GameStore.Dtos;
 using GameStore.Dtos.GameDtos;
 using GameStore.Models.Games;
+using GameStore.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace GameStore.Repositories
 
         public async Task<OperationResult<int>> DeleteGameByName(string name)
         {
-            Game game = await context.Games.FirstOrDefaultAsync(x => x.Name == name);
+            Game? game = await context.Games.FirstOrDefaultAsync(x => x.Name == name);
             if (game == null)
             {
                 return OperationResult<int>.FailureResult("Game with such name doesn't exist");
@@ -36,7 +38,7 @@ namespace GameStore.Repositories
 
         public async Task<OperationResult<int>> DeleteGameById(int id)
         {
-            Game game = await context.Games.FindAsync(id);
+            Game? game = await context.Games.FindAsync(id);
             if (game == null)
             {
                 return OperationResult<int>.FailureResult("Game with such id doesn't exist");
@@ -51,6 +53,7 @@ namespace GameStore.Repositories
         public async Task<OperationResult<IEnumerable<Game>>> GetGames()
         {
             var games = await context.Games
+                .AsNoTracking()
                 .Include(x => x.Tags)
                 .Include(x => x.Photos)
                 .Include(x => x.Reviews)
@@ -66,7 +69,7 @@ namespace GameStore.Repositories
 
         public async Task<OperationResult<Game>> UpdateGame(GameUpdateDto gameDto)
         {
-            Game game = await context.Games
+            Game? game = await context.Games
                 .Include(g => g.Tags)
                 .FirstOrDefaultAsync(x => x.Id == gameDto.Id);
 
@@ -77,7 +80,7 @@ namespace GameStore.Repositories
 
             if (gameDto.CompanyId != 0)
             {
-                Company company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
+                Company? company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
                 if (company == null)
                 {
                     return OperationResult<Game>.FailureResult("Company with such id doesn't exist");
@@ -105,7 +108,7 @@ namespace GameStore.Repositories
         public async Task<OperationResult<int>> CreateGame(GameCreateDto gameDto) //, byte[] mainImage, List<byte[]> images
         {
             Game game = mapper.Map<Game>(gameDto);
-            Company company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
+            Company? company = await context.Companies.FirstOrDefaultAsync(x => x.Id == gameDto.CompanyId);
             if (company == null)
             {
                 return OperationResult<int>.FailureResult("Company with such id doesn't exist");

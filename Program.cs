@@ -12,6 +12,7 @@ builder.Services.AddDbContext<GameStoreContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

@@ -1,4 +1,5 @@
-﻿using GameStore.Dtos.GameDtos;
+﻿using GameStore.Dtos;
+using GameStore.Dtos.GameDtos;
 using GameStore.Models.Games;
 using GameStore.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +67,6 @@ namespace GameStore.Controllers
                 return Ok(result.Data);
             }
             return BadRequest(result.ErrorMessage);
-        }
+        }        
     }
 }
