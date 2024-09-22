@@ -55,8 +55,10 @@ namespace GameStore.Repositories
             var games = await context.Games
                 .AsNoTracking()
                 .Include(x => x.Tags)
+                .Include(x => x.Company)
                 .Include(x => x.Photos)
                 .Include(x => x.Reviews)
+                .ThenInclude(x => x.User)
                 .ToListAsync();
 
             if (!games.Any())
@@ -132,10 +134,29 @@ namespace GameStore.Repositories
             return OperationResult<int>.SuccessResult(game.Id);
         }
 
+        public async Task<OperationResult<Game>> GetGameById(int id)
+        {
+            var game = await context.Games
+                .AsNoTracking()
+                .Include(x => x.Tags)
+                .Include(x => x.Company)
+                .Include(x => x.Photos)
+                .Include(x => x.Reviews)
+                .ThenInclude(x => x.User)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (game == null)
+            {
+                return OperationResult<Game>.FailureResult("There is no game with such id");
+            }
+
+            return OperationResult<Game>.SuccessResult(game);
+        }
     }
     public interface IStoreRepository
     {
         Task<OperationResult<IEnumerable<Game>>> GetGames();
+        Task<OperationResult<Game>> GetGameById(int id);
         Task<OperationResult<int>> CreateGame(GameCreateDto gameDto); //, byte[] mainImage, List<byte[]> images
         Task<OperationResult<Game>> UpdateGame(GameUpdateDto gameDto);
         Task<OperationResult<int>> DeleteGameByName(string name);

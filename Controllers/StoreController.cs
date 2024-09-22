@@ -17,6 +17,17 @@ namespace GameStore.Controllers
             this.repository = repository;
         }
 
+        [HttpGet("GetGameById")]
+        public async Task<ActionResult<Game>> GetGameById(int id)
+        {
+            var result = await repository.GetGameById(id);
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.ErrorMessage);
+        }
+
         [HttpGet("GetGames")]
         public async Task<ActionResult<IEnumerable<Game>>> GetGames()
         {

@@ -1,6 +1,6 @@
-﻿using Azure;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace GameStore.Models.Games
 {
@@ -16,6 +16,7 @@ namespace GameStore.Models.Games
         public string Description { get; set; }
         public DateTime ReleaseDate { get; set; }
         public ICollection<Photo>? Photos { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ReviewStatus ReviewStatus { get; set; }
         public Company Company { get; set; }
         public ICollection<Tag> Tags { get; set; }

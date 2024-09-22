@@ -75,6 +75,7 @@ namespace GameStore.Repositories
         {
             List<Review> reviews = await context.Reviews
                 .AsNoTracking()
+                .Include(x => x.User)
                 .Where(x => x.GameId == gameId)
                 .ToListAsync();
 
