@@ -57,7 +57,7 @@ namespace GameStore.Repositories
             Cart? cart = await context.Carts
                 .AsNoTracking()
                 .Include(x => x.Orders)
-                .ThenInclude(x=>x.Game)
+                .ThenInclude(x => x.Game)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (cart == null)
@@ -120,6 +120,29 @@ namespace GameStore.Repositories
 
             return OperationResult<int>.SuccessResult(order.Id);
         }
+
+        public async Task<OperationResult<decimal>> Purchase(int cartId, string userIdFromToken)
+        {
+            int userId = Convert.ToInt32(userIdFromToken);
+
+            Cart? cart = await context.Carts
+                .Include(x => x.Orders)
+                .ThenInclude(x => x.Game)
+                .FirstOrDefaultAsync(x => x.Id == cartId);
+
+            if (cart == null)
+            {
+                return OperationResult<decimal>.FailureResult("Cart with such id doesn't exist");
+            }
+            else if (cart.UserId != userId)
+            {
+                return OperationResult<decimal>.FailureResult("User ID mismatch");
+            }
+
+            decimal totalSum = cart.Orders.Sum(x => x.Game.Price);
+
+            return OperationResult<decimal>.SuccessResult(totalSum);
+        }
     }
     public interface ICartRepository
     {
@@ -127,5 +150,6 @@ namespace GameStore.Repositories
         public Task<OperationResult<IEnumerable<Order>>> GetOrdersFromCartById(int id);
         public Task<OperationResult<int>> AddToCart(int gameId, int cartId);
         public Task<OperationResult<int>> RemoveFromCart(int gameId, int cartId);
+        public Task<OperationResult<decimal>> Purchase(int cartId, string userIdFromToken);
     }
 }

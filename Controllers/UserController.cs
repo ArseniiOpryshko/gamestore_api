@@ -3,10 +3,11 @@ using GameStore.Models.Users;
 using GameStore.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Museum.Data.ObjsForAuth;
+using GameStore.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Configuration;
 
 namespace GameStore.Controllers
 {
@@ -14,11 +15,13 @@ namespace GameStore.Controllers
     [Route("[controller]")]
     public class UserController : Controller
     {
-        private IUserRepository repository;
+        private readonly IUserRepository repository;
+        private readonly IConfiguration configuration;
 
-        public UserController(IUserRepository repository)
+        public UserController(IUserRepository repository, IConfiguration configuration)
         {
             this.repository = repository;
+            this.configuration = configuration;
         }
 
         [HttpPost("Login")]
@@ -85,6 +88,8 @@ namespace GameStore.Controllers
             var now = DateTime.UtcNow;
             var jwt = new JwtSecurityToken(
                claims: identity.Claims,
+               issuer: configuration["Jwt:Issuer"],
+               audience: configuration["Jwt:Audience"],
                expires: now.Add(TimeSpan.FromHours(AuthOptions.LIFETIME)),
                signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha512Signature));
 

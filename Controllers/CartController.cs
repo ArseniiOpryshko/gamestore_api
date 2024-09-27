@@ -1,6 +1,7 @@
 ﻿using GameStore.Models.Games;
 using GameStore.Models.Orders;
 using GameStore.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameStore.Controllers
@@ -48,6 +49,20 @@ namespace GameStore.Controllers
         public async Task<ActionResult<int>> RemoveFromCart(int gameId, int cartId)
         {
             var result = await repository.RemoveFromCart(gameId, cartId);
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.ErrorMessage);
+        }
+        [Authorize]
+        [HttpPost("Purchase")]     
+        public async Task<ActionResult<decimal>> Purchase(int cartId)
+        {
+            var userClaims = User.Claims;
+            var userIdFromToken = userClaims.FirstOrDefault(c => c.Type == "Id")?.Value;
+
+            var result = await repository.Purchase(cartId, userIdFromToken);
             if (result.Success)
             {
                 return Ok(result.Data);
