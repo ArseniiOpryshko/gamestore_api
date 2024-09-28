@@ -10,10 +10,11 @@ namespace GameStore.Repositories
     public class CartRepository : ICartRepository
     {
         private readonly GameStoreContext context;
-
-        public CartRepository(GameStoreContext context)
+        private readonly EmailService emailService;
+        public CartRepository(GameStoreContext context, EmailService emailService)
         {
             this.context = context;
+            this.emailService = emailService;
         }
 
         public async Task<OperationResult<int>> AddToCart(int gameId, int cartId)
@@ -126,6 +127,7 @@ namespace GameStore.Repositories
             int userId = Convert.ToInt32(userIdFromToken);
 
             Cart? cart = await context.Carts
+                .Include(x => x.User)
                 .Include(x => x.Orders)
                 .ThenInclude(x => x.Game)
                 .FirstOrDefaultAsync(x => x.Id == cartId);
@@ -139,9 +141,12 @@ namespace GameStore.Repositories
                 return OperationResult<decimal>.FailureResult("User ID mismatch");
             }
 
-            decimal totalSum = cart.Orders.Sum(x => x.Game.Price);
+            await emailService.SendEmailAsync(cart.User.Email, cart.Orders.ToList());
 
-            return OperationResult<decimal>.SuccessResult(totalSum);
+            cart.Orders.Clear();    
+            await context.SaveChangesAsync();
+
+            return OperationResult<decimal>.SuccessResult(1);
         }
     }
     public interface ICartRepository

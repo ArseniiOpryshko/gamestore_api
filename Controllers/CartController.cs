@@ -65,7 +65,7 @@ namespace GameStore.Controllers
             var result = await repository.Purchase(cartId, userIdFromToken);
             if (result.Success)
             {
-                return Ok(result.Data);
+                return Ok("The purchase was successful, please check the letter with details in your email!");
             }
             return BadRequest(result.ErrorMessage);
         }
