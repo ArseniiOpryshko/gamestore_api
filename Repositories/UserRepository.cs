@@ -15,7 +15,6 @@ namespace GameStore.Repositories
         }
         public async Task<User> Create(User user)
         {
-            user.Cart = new();
             await context.Users.AddAsync(user);
             user.Id = await context.SaveChangesAsync();
             return user;

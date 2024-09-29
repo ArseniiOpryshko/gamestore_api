@@ -128,6 +128,8 @@ namespace GameStore.Repositories
 
             Cart? cart = await context.Carts
                 .Include(x => x.User)
+                .ThenInclude(x => x.Library)
+                .ThenInclude(x => x.Games)
                 .Include(x => x.Orders)
                 .ThenInclude(x => x.Game)
                 .FirstOrDefaultAsync(x => x.Id == cartId);
@@ -143,7 +145,12 @@ namespace GameStore.Repositories
 
             await emailService.SendEmailAsync(cart.User.Email, cart.Orders.ToList());
 
-            cart.Orders.Clear();    
+            foreach (var item in cart.Orders)
+            {
+                cart.User.Library!.Games.Add(item.Game);
+            }
+
+            cart.Orders.Clear();
             await context.SaveChangesAsync();
 
             return OperationResult<decimal>.SuccessResult(1);

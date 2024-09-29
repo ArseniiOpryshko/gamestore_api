@@ -14,7 +14,8 @@ namespace GameStore.Models.Users
         public byte[] PasswordHash { get; set; }
         [JsonIgnore]
         public byte[] PasswordSalt { get; set; }
-        public Cart? Cart { get; set; }
+        public Cart? Cart { get; set; } = new Cart();
+        public Library? Library { get; set; } = new Library();
         public ICollection<Review>? Reviews { get; set; }
     }
 }

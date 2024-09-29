@@ -18,6 +18,7 @@ namespace GameStore.Data
         public DbSet<Order> Order { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Library> Libraries { get; set; }
 
     }
 }

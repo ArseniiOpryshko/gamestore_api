@@ -17,6 +17,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IOpenAiRepository, OpenAiRepository>();
+builder.Services.AddScoped<ILibraryRepository, LibraryRepository>();
 builder.Services.AddScoped<EmailService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
